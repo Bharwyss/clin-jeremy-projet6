@@ -35,5 +35,6 @@ public class User {
             joinColumns = @JoinColumn(name = "adder_id"),
             inverseJoinColumns = @JoinColumn(name = "added_id")
     )
+
     private List<User> connections;
 }
