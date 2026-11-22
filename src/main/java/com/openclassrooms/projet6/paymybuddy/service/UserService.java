@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -85,5 +86,36 @@ public class UserService {
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + email));
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getConnections(Integer userId) {
+        User user = userRepository.findByIdWithConnections(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        return user.getConnections();
+    }
+
+    @Transactional
+    public User updateProfile(Integer userId, String username, String email, String password) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+
+        if (!user.getEmail().equals(email) && userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyUsedException("Email already used: " + email);
+        }
+
+        if (!user.getUsername().equals(username) && userRepository.existsByUsername(username)) {
+            throw new UsernameAlreadyUsedException("Username already used: " + username);
+        }
+
+        if (password !=null && !password.isBlank()) {
+             user.setPassword(passwordEncoder.encode(password));
+        }
+
+        user.setUsername(username);
+        user.setEmail(email);
+
+        return userRepository.save(user);
     }
 }

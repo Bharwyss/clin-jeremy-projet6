@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription — Pay My Buddy</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<main class="auth-page">
+    <h1>Pay My Buddy</h1>
+
+    <p th:if="${error}" th:text="${error}" role="alert" class="message error"></p>
+
+    <form th:action="@{/register}" method="post" th:object="${registerForm}">
+
+        <div class="field">
+            <label for="username">Nom d'utilisateur</label>
+            <input type="text" id="username" th:field="*{username}"
+                   maxlength="30" autocomplete="username">
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+        </div>
+
+        <div class="field">
+            <label for="email">Adresse mail</label>
+            <input type="email" id="email" th:field="*{email}"
+                   maxlength="255" autocomplete="email">
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+        </div>
+
+        <div class="field">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" th:field="*{password}"
+                   autocomplete="new-password" aria-describedby="password-help">
+            <span id="password-help" class="help">8 caractères minimum</span>
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+        </div>
+
+        <button type="submit">S'inscrire</button>
+    </form>
+
+    <p>Déjà un compte ? <a th:href="@{/login}">Se connecter</a></p>
+</main>
+
+</body>
+</html>

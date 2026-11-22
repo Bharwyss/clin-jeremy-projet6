@@ -205,4 +205,58 @@ public class UserServiceTest {
         assertEquals(1, result.getId());
         assertEquals("jake@example.com", result.getEmail());
     }
+
+    // ---------- getConnections ----------
+
+    @Test
+    public void shouldThrowWhenUserNotFoundForConnections() {
+        // Given
+        when(userRepository.findByIdWithConnections(1)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThrows(UserNotFoundException.class, () ->
+                userService.getConnections(1));
+    }
+
+    @Test
+    public void shouldReturnConnectionsForUser() {
+        // Given
+        User poum = new User();
+        poum.setId(2);
+        poum.setUsername("poum");
+
+        User sali = new User();
+        sali.setId(3);
+        sali.setUsername("sali");
+
+        User user = new User();
+        user.setId(1);
+        user.setConnections(new ArrayList<>(List.of(poum, sali)));
+
+        when(userRepository.findByIdWithConnections(1)).thenReturn(Optional.of(user));
+
+        // When
+        List<User> connections = userService.getConnections(1);
+
+        // Then
+        assertEquals(2, connections.size());
+        assertTrue(connections.contains(poum));
+        verify(userRepository).findByIdWithConnections(1);
+    }
+
+    @Test
+    public void shouldReturnEmptyConnectionsWhenNone() {
+        // Given
+        User user = new User();
+        user.setId(1);
+        user.setConnections(new ArrayList<>());
+
+        when(userRepository.findByIdWithConnections(1)).thenReturn(Optional.of(user));
+
+        // When
+        List<User> connections = userService.getConnections(1);
+
+        // Then
+        assertTrue(connections.isEmpty());
+    }
 }

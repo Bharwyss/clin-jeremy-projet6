@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class TransferService {
@@ -60,6 +61,14 @@ public class TransferService {
         transfer.setReceiver(receiver);
         transfer.setDescription(description);
         transfer.setCreatedAt(LocalDateTime.now());
+        transfer.setAmount(amount);
         transferRepository.save(transfer);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Transfer> getTransferHistory(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        return transferRepository.findHistoryByUser(user);
     }
 }

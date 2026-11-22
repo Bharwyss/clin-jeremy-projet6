@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transférer — Pay My Buddy</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header>
+    <a class="logo" th:href="@{/transfer}">Pay My Buddy</a>
+    <nav aria-label="Navigation principale">
+        <a th:href="@{/transfer}" aria-current="page">Transférer</a>
+        <a th:href="@{/profile}">Profil</a>
+        <a th:href="@{/connections}">Ajouter relation</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="link-button">Se déconnecter</button>
+        </form>
+    </nav>
+</header>
+
+<main>
+    <h1>Transférer de l'argent</h1>
+
+    <p th:if="${success}" th:text="${success}" role="status" class="message success"></p>
+    <p th:if="${error}" th:text="${error}" role="alert" class="message error"></p>
+
+    <p>Solde : <span th:text="${#numbers.formatDecimal(balance, 1, 2)}"> </span> € </p>
+
+    <form th:action="@{/transfer}" method="post" th:object="${transferForm}" class="transfer-form">
+
+        <div class="field">
+            <label for="receiverId">Relation</label>
+            <select id="receiverId" th:field="*{receiverId}">
+                <option value="">Sélectionner une relation</option>
+                <option th:each="connection : ${connections}"
+                        th:value="${connection.id}"
+                        th:text="${connection.username}"></option>
+            </select>
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('receiverId')}" th:errors="*{receiverId}"></span>
+        </div>
+
+        <div class="field">
+            <label for="description">Description</label>
+            <input type="text" id="description" th:field="*{description}" maxlength="200">
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+        </div>
+
+        <div class="field">
+            <label for="amount">Montant (€)</label>
+            <input type="number" id="amount" th:field="*{amount}"
+                   min="0.01" step="0.01" aria-describedby="amount-help">
+            <span id="amount-help" class="help">Minimum 0,01 €</span>
+            <span class="field-error" role="alert"
+                  th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span>
+        </div>
+
+        <button type="submit">Payer</button>
+    </form>
+
+    <h2>Mes transactions</h2>
+
+    <table>
+        <caption class="visually-hidden">Historique de vos transferts</caption>
+        <thead>
+        <tr>
+            <th scope="col">Relation</th>
+            <th scope="col">Description</th>
+            <th scope="col">Montant</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="transfer : ${transfers}">
+            <td th:text="${transfer.sender != null and transfer.sender.id == currentUserId
+                         ? (transfer.receiver != null ? transfer.receiver.username : 'Compte supprimé')
+                         : (transfer.sender != null ? transfer.sender.username : 'Compte supprimé')}"></td>
+            <td th:text="${transfer.description}"></td>
+            <td th:classappend="${transfer.sender != null and transfer.sender.id == currentUserId} ? 'sent' : 'received'"
+                th:text="${(transfer.sender != null and transfer.sender.id == currentUserId ? '-' : '+')
+                         + #numbers.formatDecimal(transfer.amount, 1, 2) + ' €'}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(transfers)}">
+            <td colspan="3">Aucune transaction pour le moment.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+
+</body>
+</html>

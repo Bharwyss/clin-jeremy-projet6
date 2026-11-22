@@ -157,4 +157,58 @@ public class TransferServiceTest {
         verify(userRepository).save(sender);
         verify(userRepository).save(receiver);
     }
+    // ---------- getTransferHistory ----------
+
+    @Test
+    public void shouldThrowWhenUserNotFoundForHistory() {
+        // Given
+        when(userRepository.findById(1)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThrows(UserNotFoundException.class, () ->
+                transferService.getTransferHistory(1));
+    }
+
+    @Test
+    public void shouldReturnTransferHistoryForUser() {
+        // Given
+        User user = new User();
+        user.setId(1);
+
+        Transfer sent = new Transfer();
+        sent.setId(1);
+        sent.setSender(user);
+        sent.setAmount(new BigDecimal("25.50"));
+
+        Transfer received = new Transfer();
+        received.setId(2);
+        received.setReceiver(user);
+        received.setAmount(new BigDecimal("30.50"));
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(transferRepository.findHistoryByUser(user)).thenReturn(List.of(sent, received));
+
+        // When
+        List<Transfer> history = transferService.getTransferHistory(1);
+
+        // Then
+        assertEquals(2, history.size());
+        verify(transferRepository).findHistoryByUser(user);
+    }
+
+    @Test
+    public void shouldReturnEmptyHistoryWhenNoTransfer() {
+        // Given
+        User user = new User();
+        user.setId(1);
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(transferRepository.findHistoryByUser(user)).thenReturn(List.of());
+
+        // When
+        List<Transfer> history = transferService.getTransferHistory(1);
+
+        // Then
+        assertTrue(history.isEmpty());
+    }
 }
